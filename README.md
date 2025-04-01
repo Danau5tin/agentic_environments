@@ -35,8 +35,8 @@ def agent_callback(state: FileSystemState) -> ModelOutput:
         tool_calls=[ToolCall(name="tool", parameters={"k":"v"})]
     )
 
-docker_env = DockerEnv(port_map={"8000:8000"})
 
+docker_env = DockerEnv(port_map={"8000:8000"})
 system = AgenticSystem[FileSystemState](
     environment=docker_env,
     agent_callback=agent_callback,
