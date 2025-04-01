@@ -35,12 +35,16 @@ def agent_callback(state: FileSystemState) -> ModelOutput:
         tool_calls=[ToolCall(name="tool", parameters={"k":"v"})]
     )
 
+docker_env = DockerEnv(port_map={"8000:8000"})
 
 system = AgenticSystem[FileSystemState](
-    environment=DockerEnv(port_map={"8000:8000"}),
+    environment=docker_env,
     agent_callback=agent_callback,
     max_iterations=10,
 )
+
+initial_state = docker_env.get_state()
+system.run()
 ```
 
 ## Actual example
