@@ -44,7 +44,7 @@ system = AgenticSystem[FileSystemState](
 )
 
 initial_state = docker_env.get_state()
-system.run()
+system.run(initial_state)
 ```
 
 ## Actual example
