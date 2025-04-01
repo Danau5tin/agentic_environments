@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Generic, Optional
 
-from src.agentic_environments.model_output import ModelOutput
-from src.agentic_environments.state import STATE
+from agentic_environments.model_output import ModelOutput
+from agentic_environments.state import STATE
 
 
 

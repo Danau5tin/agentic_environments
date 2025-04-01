@@ -4,11 +4,14 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
-
+dependencies = [
+    "agentic-environments",
+    "pandas>=2.2.3",
+    "transformers>=4.50.3",
+]
 
 [tool.uv.sources]
-agentic_environments = { workspace = true }
+agentic-environments = { workspace = true }
 
 [tool.uv.workspace]
 members = [
