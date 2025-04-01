@@ -38,7 +38,7 @@ def agent_callback(state: FileSystemState) -> ModelOutput:
 
 system = AgenticSystem[FileSystemState](
     environment=DockerEnv(port_map={"8000:8000"}),
-    agent_callback=agent_callback_wrapper,
+    agent_callback=agent_callback,
     max_iterations=10,
 )
 ```
