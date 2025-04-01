@@ -42,3 +42,8 @@ system = AgenticSystem[FileSystemState](
     max_iterations=10,
 )
 ```
+
+## Actual example
+In `examples/calculator_agent` I have challenged Phi-4-mini-instruct with trying to use a calculator tool with a not so straightforward tool call API.
+
+This uses an extended `Environment`, custom tools, `AgenticSystem`, as well as transformers library for inference.
