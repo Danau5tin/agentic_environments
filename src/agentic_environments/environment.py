@@ -44,10 +44,6 @@ class Environment(Generic[STATE], ABC):
             EnvironmentResult
         """
 
-    def initialise_state_with_user_prompt(self, user_prompt: str) -> None:
-        """Initialise or reset the environment state with the given prompt."""
-        raise NotImplementedError("Environment subclasses must implement")
-
     @abstractmethod
     def get_state(self) -> Optional[STATE]:
         """Get the current state of this environment."""

@@ -33,13 +33,6 @@ class CalculatorEnvironment(Environment):
         self.logger = logging.getLogger(f"{__name__}.CalculatorEnv[{env_idx}]")
         self.logger.setLevel(logging.INFO)
 
-    def initialise_state_with_user_prompt(self, user_prompt: str) -> None:
-        """Initialize state with user prompt."""
-        new_state = CalculatorState()
-        new_state.add_message("user", user_prompt)
-        self.state = new_state
-        self.logger.debug("Initialized state. Error count reset.")
-
     def handle_output(self, model_output: ModelOutput) -> EnvironmentResult:
         """Process model output and update environment state."""
         new_state = self.state.copy()
