@@ -26,10 +26,15 @@ class DockerEnv[FileSystemState](Environment):
     def clean_up(self) -> None:
         # Clean up resources
 
+
 def agent_callback(state: FileSystemState) -> ModelOutput:
     # Run inference using transformers, vLLM, etc..
     # Parse tool calls to ModelOutput depending on the model/service used
-    return ModelOutput(raw_output="tool(k=v)", tool_calls=[ToolCall(name="tool", parameters={"k":"v"})])
+    return ModelOutput(
+        raw_output="tool(k=v)", 
+        tool_calls=[ToolCall(name="tool", parameters={"k":"v"})]
+    )
+
 
 system = AgenticSystem[FileSystemState](
     environment=DockerEnv(port_map={"8000:8000"}),
