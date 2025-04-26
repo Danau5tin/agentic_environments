@@ -1,3 +1,4 @@
+import copy
 import os
 import logging
 from dataclasses import dataclass
@@ -56,7 +57,7 @@ class EvaluationTask:
     prompt_column: str = "prompt"
     answer_column: str = "answer"
     temperature: float = 0.9
-    max_env_calls: int = 20
+    max_env_calls: int = 5
     max_new_tokens: int = 1000
 
 
@@ -126,8 +127,14 @@ class EvalRunner:
         self.logger.debug(f"Processing state with {len(conversation.msgs)} messages")
         
         try:
+            msgs_for_template = copy.deepcopy(conversation.msgs)
+
+            for msg in msgs_for_template:
+                if "tool_calls" in msg:
+                    del msg["tool_calls"]
+
             inputs = self.tokenizer.apply_chat_template(
-                conversation.msgs,
+                msgs_for_template,
                 add_generation_prompt=True,
                 return_tensors="pt"
             ).to(self.device)
