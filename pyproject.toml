@@ -7,7 +7,9 @@ authors = [
     { name = "Daniel Austin", email = "dan@aituning.ai" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pyyaml>=6.0.2",
+]
 
 [build-system]
 requires = ["hatchling"]
