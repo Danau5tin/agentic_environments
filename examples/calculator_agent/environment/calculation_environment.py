@@ -200,7 +200,7 @@ class CalculatorEnvironment(Environment):
     def _execute_calculator_call(self, tool_call: ToolCall) -> EnvironmentResult:
         """Execute calculator tool call and handle results."""
         try:
-            expression = Expression(**tool_call.tool_parameters)
+            expression = Expression.from_dict(tool_call.tool_parameters)
             result = calculate(expression)
 
             return EnvironmentResult(
