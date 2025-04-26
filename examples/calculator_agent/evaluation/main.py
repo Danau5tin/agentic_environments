@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 from evaluation.runner import EvalRunner, EvaluationTask
-from evaluation.calc_evals import calculator_task_phi_4, calculator_tool_parser
+from evaluation.calc_evals import calculator_task_rl_trained_qwen_0_5b, calculator_tool_parser
 
 
 OUTPUT_DIRECTORY = "./evaluation/results"
@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
 
-    current_task: EvaluationTask = calculator_task_phi_4
+    current_task: EvaluationTask = calculator_task_rl_trained_qwen_0_5b
     current_parser = calculator_tool_parser
 
     runner = EvalRunner(tool_call_parser=current_parser)
