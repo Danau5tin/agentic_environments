@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import List
 
 from agentic_environments.environment import Environment, EnvironmentResult
 from agentic_environments.model_output import ModelOutput, ToolCall
@@ -27,46 +27,39 @@ class CalculatorEnvironment(Environment):
     MAX_ERROR_MSG_LENGTH = 250
     SUPPORTED_TOOL = "calculate"
 
-    def __init__(self, initial_state: Optional[CalculatorState] = None, env_idx: int = 0):
+    def __init__(self, env_idx: int = 0):
         super().__init__(env_idx=env_idx)
-        self.state = initial_state or CalculatorState()
+        self.state = CalculatorState()
         self.logger = logging.getLogger(f"{__name__}.CalculatorEnv[{env_idx}]")
         self.logger.setLevel(logging.INFO)
 
     def handle_output(self, model_output: ModelOutput) -> EnvironmentResult:
         """Process model output and update environment state."""
-        new_state = self.state.copy()
         
-        tool_calls_dict = [tc.to_dict() for tc in model_output.tool_calls] if model_output.tool_calls else None
-        new_state.add_message("assistant", model_output.raw_content, tool_calls_dict)
-
-        # If no tool calls, consider it a final answer
         if not model_output.tool_calls:
             self.logger.debug("Model provided final answer.")
-            self.state = new_state
             return EnvironmentResult(should_end_sequence=True)
 
-        result = self._handle_tool_calls(model_output.tool_calls, new_state)
-        self._update_error_count(new_state, result.has_error)
+        result = self._handle_tool_calls(model_output.tool_calls)
+        self._update_error_count(result.has_error)
         
-        if new_state.consecutive_error_count >= self.MAX_CONSECUTIVE_ERRORS:
+        if self.state.consecutive_error_count >= self.MAX_CONSECUTIVE_ERRORS:
             self.logger.warning(f"Max consecutive errors ({self.MAX_CONSECUTIVE_ERRORS}) reached. Forcing end.")
             result.should_end_sequence = True
 
-        self.state = new_state
         return result
 
-    def _update_error_count(self, state: CalculatorState, has_error: bool) -> None:
+    def _update_error_count(self, has_error: bool) -> None:
         """Update the consecutive error count based on result."""
         if has_error:
-            state.consecutive_error_count += 1
-            self.logger.debug(f"Error occurred. Consecutive error count: {state.consecutive_error_count}")
+            self.state.consecutive_error_count += 1
+            self.logger.debug(f"Error occurred. Consecutive error count: {self.state.consecutive_error_count}")
         else:
-            if state.consecutive_error_count > 0:
+            if self.state.consecutive_error_count > 0:
                 self.logger.debug("Successful tool call. Resetting consecutive error count.")
-            state.consecutive_error_count = 0
+            self.state.consecutive_error_count = 0
 
-    def _handle_tool_calls(self, tool_calls: List[ToolCall], state: CalculatorState) -> EnvironmentResult:
+    def _handle_tool_calls(self, tool_calls: List[ToolCall]) -> EnvironmentResult:
         """Process tool calls and return result."""
         try:
             if len(tool_calls) > 1:
@@ -76,41 +69,42 @@ class CalculatorEnvironment(Environment):
             if tool_call.tool_name != self.SUPPORTED_TOOL:
                 raise UnsupportedToolCallError(f"Unsupported tool call: {tool_call.tool_name}")
 
-            return self._execute_calculator_call(tool_call, state)
+            return self._execute_calculator_call(tool_call)
 
         except CalculatorError as e:
-            return self._create_error_result(e, state)
+            return self._create_error_result(e)
         except Exception as e:
             self.logger.error(f"Unexpected error: {str(e)}")
-            return self._create_error_result(e, state)
+            return self._create_error_result(e)
 
-    def _execute_calculator_call(self, tool_call: ToolCall, state: CalculatorState) -> EnvironmentResult:
+    def _execute_calculator_call(self, tool_call: ToolCall) -> EnvironmentResult:
         """Execute calculator tool call and handle results."""
         try:
             expression = Expression(**tool_call.tool_parameters["expression"])
             result = calculate(expression)
-            
-            tool_call_output = str(result)
-            state.add_message("tool", tool_call_output)
-            
+
             return EnvironmentResult(
                 should_end_sequence=False,
-                output_to_show_model=tool_call_output,
+                resp_msg={
+                    "role": "tool",
+                    "content": str(result),
+                },
             )
         except Exception as e:
-            return self._create_error_result(e, state)
+            return self._create_error_result(e)
 
-    def _create_error_result(self, exception: Exception, state: CalculatorState) -> EnvironmentResult:
+    def _create_error_result(self, exception: Exception) -> EnvironmentResult:
         """Create and record an error result with appropriate truncation."""
         error_msg = f"Error: {str(exception)}"
         if len(error_msg) > self.MAX_ERROR_MSG_LENGTH:
             error_msg = f"Error: Output too long. Truncated: {str(exception)[:self.MAX_ERROR_MSG_LENGTH]}..."
         
-        state.add_message("tool", error_msg)
-        
         return EnvironmentResult(
             should_end_sequence=False,
-            output_to_show_model=error_msg,
+            resp_msg={
+                "role": "tool",
+                "content": error_msg,
+            },
             exception=exception,
         )
 

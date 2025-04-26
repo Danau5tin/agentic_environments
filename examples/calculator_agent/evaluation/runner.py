@@ -4,10 +4,9 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Type
 
 from agentic_environments.tool_call_parsers.tool_call_parser import ToolCallParser
-from agentic_environments.agentic_system import AgenticSystem
+from agentic_environments.agentic_system import Conversation, AgenticSystem
 from agentic_environments.environment import Environment
 from agentic_environments.model_output import ModelOutput
-from agentic_environments.state import STATE
 
 
 import pandas as pd
@@ -50,9 +49,9 @@ class EvaluationTask:
     """Configuration for a specific evaluation task."""
     task_name: str
     eval_csv_path: str
+    sys_msg: str
     model_name: str
     environment_class: Type[Environment]
-    create_initial_state: Callable[[str], STATE]
     verify_answer: Callable[[str, str], bool] # Takes model_response and expected_answer, returns bool
     prompt_column: str = "prompt"
     answer_column: str = "answer"
@@ -118,22 +117,17 @@ class EvalRunner:
 
     def _agent_callback(
         self,
-        state: STATE,
+        conversation: Conversation,
         task: EvaluationTask
     ) -> ModelOutput:
         """
         Generic agent callback function that interacts with the model.
-        """
-        if not hasattr(state, 'messages') or not isinstance(state.messages, list):
-            error_msg = f"State object of type {type(state)} must have a 'messages' attribute (list)"
-            self.logger.error(error_msg)
-            raise AttributeError(error_msg)
-        
-        self.logger.debug(f"Processing state with {len(state.messages)} messages")
+        """       
+        self.logger.debug(f"Processing state with {len(conversation.msgs)} messages")
         
         try:
             inputs = self.tokenizer.apply_chat_template(
-                state.messages,
+                conversation.msgs,
                 add_generation_prompt=True,
                 return_tensors="pt"
             ).to(self.device)
@@ -171,26 +165,29 @@ class EvalRunner:
         self.logger.debug(f"Running evaluation for prompt: {prompt[:50]}...")
         
         try:
-            initial_state = task.create_initial_state(prompt)
-            environment = task.environment_class(initial_state=initial_state)
+            environment = task.environment_class()
 
             # Create a wrapper for the agent callback that includes task
-            def agent_callback_wrapper(state: STATE):
-                return self._agent_callback(state, task)
+            def agent_callback_wrapper(conversation: Conversation):
+                return self._agent_callback(conversation, task)
 
-            system = AgenticSystem[type(initial_state)](
+            system = AgenticSystem(
                 environment=environment,
                 agent_callback=agent_callback_wrapper,
                 max_iterations=task.max_env_calls,
             )
 
-            final_state = system.run(state=initial_state)
+            new_convo = Conversation(
+                msgs=[{"role": "system", "content": task.sys_msg}],
+            )
+            finished_conversation = system.run(conversation=new_convo)
 
-            # Extract final response - assumes last message is assistant's
             final_response = ""
-            if final_state.messages and final_state.messages[-1].get("role") == "assistant":
-                content = final_state.messages[-1].get("content", "")
-                tool_calls_exist = bool(final_state.messages[-1].get("tool_calls"))
+            msgs = finished_conversation.conversation.msgs
+            last_msg = msgs[-1]
+            if msgs and last_msg.get("role") == "assistant":
+                content = last_msg.get("content", "")
+                tool_calls_exist = bool(last_msg.get("tool_calls"))
 
                 if content:
                     final_response = content
@@ -198,9 +195,9 @@ class EvalRunner:
                     final_response = "[Assistant used tools but provided no final text]"
                 else:
                     final_response = "[Assistant provided no final text or tool calls]"
-            elif final_state.messages:
+            elif msgs:
                 # Handle cases where the last message isn't from the assistant
-                final_response = f"[Evaluation ended. Last message role: {final_state.messages[-1].get('role', 'Unknown')}]"
+                final_response = f"[Evaluation ended. Last message role: {last_msg.get('role', 'Unknown')}]"
             else:
                 final_response = "[No messages generated in final state]"
 
@@ -208,7 +205,8 @@ class EvalRunner:
             self.logger.debug(f"Evaluation result: {'Correct' if is_correct else 'Incorrect'}")
 
             return {
-                "final_state_messages": final_state.messages,
+                "final_state_messages": msgs,
+                "final_state": finished_conversation.environment_state,
                 "final_response": final_response,
                 "is_correct": is_correct
             }

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, Optional
+from typing import Dict, Generic, Optional
 
 from agentic_environments.model_output import ModelOutput
 from agentic_environments.state import STATE
@@ -12,7 +12,7 @@ class EnvironmentResult:
     """Result of handling an action in the environment."""
 
     should_end_sequence: bool = False
-    output_to_show_model: Optional[str] = None
+    resp_msg: Optional[Dict[str, str]] = None
     exception: Optional[Exception] = None
 
     @property

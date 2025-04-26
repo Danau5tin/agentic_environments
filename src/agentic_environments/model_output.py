@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 class ToolCall:
     """
@@ -25,3 +25,14 @@ class ModelOutput:
     def __init__(self, raw_content: str, tool_calls: Optional[List[ToolCall]]):
         self.raw_content = raw_content
         self.tool_calls = tool_calls
+
+    def to_msg_dict(self) -> Dict[str, str]:
+        assistant_msg = {
+            "role": "assistant",
+            "content": self.raw_content,
+        }
+        if self.tool_calls:
+            tool_call_dicts = [tc.to_dict() for tc in self.tool_calls]
+            assistant_msg["tool_calls"] = tool_call_dicts
+
+        return assistant_msg
