@@ -102,16 +102,35 @@ calculator_task_rl_trained_qwen_0_5b = EvaluationTask(
     temperature=0.2
 )
 
-# calculator_task_rl_trained_qwen_3b = EvaluationTask(
-#     task_name="RL-trained-Qwen-3b-standard-calculator-agent",
-#     model_name="Dan-AiTuning/calculator_agent_qwen2.5_3b",
-#     sys_msg=qwen_2_5_sys_msg,
-#     eval_csv_path="datasets/basic_calculations_eval.csv",
-#     environment_class=CalculatorEnvironment,
-#     verify_answer=is_correct_answer,
-#     temperature=0.2
-# )
+calculator_task_qwen_0_5b = EvaluationTask(
+    task_name="Qwen-0.5b-standard-calculator-agent",
+    model_name="Qwen/Qwen2.5-0.5B-Instruct",
+    sys_msg=qwen_2_5_sys_msg,
+    eval_csv_path="datasets/basic_calculations_eval.csv",
+    environment_class=CalculatorEnvironment,
+    verify_answer=is_correct_answer,
+    temperature=0.2
+)
 
+calculator_task_rl_trained_qwen_3b = EvaluationTask(
+    task_name="RL-trained-Qwen-3b-standard-calculator-agent",
+    model_name="Dan-AiTuning/calculator_agent_qwen2.5_3b",
+    sys_msg=qwen_2_5_sys_msg,
+    eval_csv_path="datasets/basic_calculations_eval.csv",
+    environment_class=CalculatorEnvironment,
+    verify_answer=is_correct_answer,
+    temperature=0.2
+)
+
+calculator_task_qwen_3b = EvaluationTask(
+    task_name="Qwen-3b-standard-calculator-agent",
+    model_name="Qwen/Qwen2.5-3B-Instruct",
+    sys_msg=qwen_2_5_sys_msg,
+    eval_csv_path="datasets/basic_calculations_eval.csv",
+    environment_class=CalculatorEnvironment,
+    verify_answer=is_correct_answer,
+    temperature=0.2
+)
 
 calculator_tool_parser = YamlTagToolCallParser()
 # calculator_tool_parser = Phi4MiniInstructToolCallParser()
