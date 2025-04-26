@@ -178,7 +178,10 @@ class EvalRunner:
             )
 
             new_convo = Conversation(
-                msgs=[{"role": "system", "content": task.sys_msg}],
+                msgs=[
+                    {"role": "system", "content": task.sys_msg},
+                    {"role": "user", "content": prompt},
+                ],
             )
             finished_conversation = system.run(conversation=new_convo)
 
