@@ -5,7 +5,7 @@ from typing import List, Any
 from agentic_environments.model_output import ToolCall
 from agentic_environments.tool_call_parsers.tool_call_parser import ToolCallParser
 
-class YamlTagToolCallParser(ToolCallParser):
+class XMLTagWithYamlContentToolCallParser(ToolCallParser):
     """
     Parser for extracting tool calls from model outputs using YAML within custom tags.
 

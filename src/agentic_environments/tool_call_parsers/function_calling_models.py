@@ -5,11 +5,16 @@ from typing import List
 from agentic_environments.model_output import ToolCall
 from agentic_environments.tool_call_parsers.tool_call_parser import ToolCallParser
 
-class Phi4MiniInstructToolCallParser(ToolCallParser):
+class StandardFunctionCallingToolCallParser(ToolCallParser):
     """
-    Parser for extracting tool calls from Phi-4-mini-instruct model outputs.
+    Parser for extracting tool calls from tool calling models that accept function calling in the chat template JSON format.
+    Ollama maintains a great list [here](https://ollama.com/search?c=tools)
+    Example models include:
+     - Phi-4-mini
+     - Llama 3.3
+     - Qwen2.5 & 3
     
-    Supports two formats:
+    Supports two output formats:
     1. <|tool_call|>[{"type": "function", "function": {"name": "tool_name", "arguments": {...}}}]<|/tool_call|>
     2. <|tool_call|>[{"name": "tool_name", "arguments": {...}}]<|/tool_call|>
     """
