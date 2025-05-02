@@ -1,6 +1,6 @@
 [project]
 name = "agentic-environments"
-version = "0.1.0"
+version = "0.1.1"
 description = "Framework for building agentic environments with tool integration"
 readme = "README.md"
 authors = [
