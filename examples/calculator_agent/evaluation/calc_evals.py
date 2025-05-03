@@ -132,5 +132,26 @@ calculator_task_qwen_3b = EvaluationTask(
     temperature=0.2
 )
 
+calculator_task_qwen3_0_6b = EvaluationTask(
+    task_name="Qwen3-0.6b-standard-calculator-agent",
+    model_name="Qwen/Qwen3-0.6B",
+    sys_msg=qwen_2_5_sys_msg,
+    eval_csv_path="datasets/basic_calculations_eval.csv",
+    environment_class=CalculatorEnvironment,
+    verify_answer=is_correct_answer,
+    temperature=0.2
+)
+
+calculator_task_qwen3_1_7b = EvaluationTask(
+    task_name="Qwen3-1.7b-standard-calculator-agent",
+    model_name="Qwen/Qwen3-1.7B",
+    sys_msg=qwen_2_5_sys_msg,
+    eval_csv_path="datasets/basic_calculations_eval.csv",
+    environment_class=CalculatorEnvironment,
+    verify_answer=is_correct_answer,
+    temperature=0.2
+)
+
+
 calculator_tool_parser = YamlTagToolCallParser()
 # calculator_tool_parser = Phi4MiniInstructToolCallParser()
